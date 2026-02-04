@@ -16,6 +16,11 @@ Config config = JsonSerializer.Deserialize<Config>(json, options) ?? throw new I
 Console.WriteLine($"Processing files in: {config.AllFilesDirectory}");
 Console.WriteLine($"Moving valid files to: {config.ValidFilesDirectory}");
 
+if (!Directory.Exists(config.ValidFilesDirectory))
+{
+    Directory.CreateDirectory(config.ValidFilesDirectory);
+}
+
 IEnumerable<string> files = Directory.EnumerateFiles(config.AllFilesDirectory);
 
 int totalFiles = files.Count();
