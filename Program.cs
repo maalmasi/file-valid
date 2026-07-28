@@ -19,8 +19,17 @@ var options = new JsonSerializerOptions
 Config config = JsonSerializer.Deserialize<Config>(json, options)
     ?? throw new InvalidOperationException("Failed to deserialize configuration.");
 
-config.AllFilesDirectory = $"{config.BaseDirectory}\\{config.SubDirectory}";
-config.ValidFilesDirectory = $"{config.BaseDirectory}\\{config.SubDirectory}valid";
+Console.Write("Enter the directory to process: ");
+string allFilesDirectory = Console.ReadLine() ?? "";
+if (!Directory.Exists(allFilesDirectory))
+{
+    Console.Error.WriteLine($"Directory does not exist: {allFilesDirectory}");
+    return;
+}
+
+string validFilesDirectory = allFilesDirectory + "valid";
+config.AllFilesDirectory = allFilesDirectory;
+config.ValidFilesDirectory = validFilesDirectory;
 
 Console.WriteLine($"Processing files in: {config.AllFilesDirectory}");
 Console.WriteLine($"Moving valid files to: {config.ValidFilesDirectory}");
@@ -72,7 +81,7 @@ Parallel.ForEach(files, parallelOptions, file =>
         case ".jpg":
         case ".jpeg":
         case ".png":
-            isValid = JpegHandler.CheckValid(
+            isValid = ImageHandler.CheckValid(
                 file,
                 config.MinHeightPx,
                 config.MinWidthPx);

@@ -2,7 +2,7 @@
 
 namespace FileValid.Handler;
 
-public static class JpegHandler
+public static class ImageHandler
 {
     public static bool CheckValid(string file, int minHeightPx, int minWidthPx)
     {
