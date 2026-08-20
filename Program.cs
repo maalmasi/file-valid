@@ -28,15 +28,22 @@ if (!Directory.Exists(allFilesDirectory))
 }
 
 string validFilesDirectory = allFilesDirectory + "valid";
+string tooSmallDirectory = allFilesDirectory + "toosmall";
 config.AllFilesDirectory = allFilesDirectory;
 config.ValidFilesDirectory = validFilesDirectory;
 
 Console.WriteLine($"Processing files in: {config.AllFilesDirectory}");
 Console.WriteLine($"Moving valid files to: {config.ValidFilesDirectory}");
+Console.WriteLine($"Moving too small files to: {tooSmallDirectory}");
 
 if (!Directory.Exists(config.ValidFilesDirectory))
 {
     Directory.CreateDirectory(config.ValidFilesDirectory);
+}
+
+if (!Directory.Exists(tooSmallDirectory))
+{
+    Directory.CreateDirectory(tooSmallDirectory);
 }
 
 var files = Directory.EnumerateFiles(config.AllFilesDirectory).ToList();
@@ -68,12 +75,6 @@ Parallel.ForEach(files, parallelOptions, file =>
 
     var fileInfo = new FileInfo(file);
 
-    if (fileInfo.Length < config.MinByteFileSize)
-    {
-        Interlocked.Increment(ref invalid);
-        return;
-    }
-
     bool isValid = false;
 
     switch (fileInfo.Extension.ToLowerInvariant())
@@ -92,11 +93,21 @@ Parallel.ForEach(files, parallelOptions, file =>
     {
         Interlocked.Increment(ref valid);
 
+        string directory;
+        if (fileInfo.Length < config.MinByteFileSize)
+        {
+            directory = tooSmallDirectory;
+        }
+        else
+        {
+            directory = config.ValidFilesDirectory;
+        }
+
         try
         {
             Directory.Move(
                 file,
-                Path.Combine(config.ValidFilesDirectory, fileInfo.Name));
+                Path.Combine(directory, fileInfo.Name));
         }
         catch (Exception ex)
         {
